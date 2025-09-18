@@ -39,7 +39,6 @@ import { Server } from "socket.io";
 const app = express();
 const httpServer = createServer(app);
 
-// Configuración de Socket.io con CORS
 const io = new Server(httpServer, {
   cors: {
     origin: [
@@ -56,24 +55,30 @@ app.get("/", (req, res) => {
   res.send("Servidor WebSocket en Render funcionando 🚀");
 });
 
-// Conexión de clientes
 io.on("connection", (socket) => {
   console.log("✅ Cliente conectado:", socket.id);
 
-  // 🔹 Eventos de productos
-  socket.on("product-added", (product) => io.emit("product-added", product));
-  socket.on("product-updated", (product) =>
-    io.emit("product-updated", product)
-  );
-  socket.on("product-deleted", (id) => io.emit("product-deleted", id));
+  socket.on("product-added", (product) => {
+    console.log("🔹 Evento product-added recibido:", product.id);
+    io.emit("product-added", product);
+  });
 
-  socket.on("disconnect", () =>
-    console.log("❌ Cliente desconectado:", socket.id)
-  );
+  socket.on("product-updated", (product) => {
+    console.log("🔹 Evento product-updated recibido:", product.id);
+    io.emit("product-updated", product);
+  });
+
+  socket.on("product-deleted", (deletedId) => {
+    console.log("🔴 Evento product-deleted recibido, deletedId:", deletedId);
+    io.emit("product-deleted", deletedId); // solo enviamos el string del ID
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Cliente desconectado:", socket.id);
+  });
 });
 
-// Puerto asignado por Render
 const PORT = process.env.PORT;
-httpServer.listen(PORT, () =>
-  console.log(`🚀 WebSocket corriendo en puerto ${PORT}`)
-);
+httpServer.listen(PORT, () => {
+  console.log(`🚀 WebSocket corriendo en puerto ${PORT}`);
+});

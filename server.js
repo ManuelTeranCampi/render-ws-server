@@ -31,49 +31,53 @@
 //   console.log(`Servidor WebSocket corriendo en puerto ${PORT}`)
 // );
 
+// server.js
 import { createServer } from "http";
 import { Server } from "socket.io";
 import express from "express";
 
-const app = express(); // Creamos una app de Express
-const PORT = process.env.PORT; // Render asigna automáticamente el puerto
-
-// Endpoint de prueba
-app.get("/", (req, res) => {
-  res.send("Servidor WebSocket corriendo ✅");
-});
-
-// Creamos el servidor HTTP a partir de Express
+const app = express();
 const httpServer = createServer(app);
 
-// Configuración de Socket.IO
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // aquí puedes poner tu dominio de Vercel si quieres
+    origin: [
+      "http://localhost:3000", // desarrollo local
+      "https://tu-app-vercel.vercel.app", // 🔹 cambia esto por el dominio real de tu frontend en Vercel
+    ],
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
+// Ruta de prueba para evitar "Cannot GET /"
+app.get("/", (req, res) => {
+  res.send("Servidor WebSocket en Render funcionando 🚀");
+});
+
 io.on("connection", (socket) => {
-  console.log("Nuevo cliente conectado:", socket.id);
+  console.log("✅ Nuevo cliente conectado:", socket.id);
 
   // Eventos de productos
-  socket.on("product-added", (newProduct) =>
-    io.emit("product-added", newProduct)
-  );
-  socket.on("product-updated", (updatedProduct) =>
-    io.emit("product-updated", updatedProduct)
-  );
-  socket.on("product-deleted", (deletedId) =>
-    io.emit("product-deleted", deletedId)
-  );
+  socket.on("product-added", (newProduct) => {
+    io.emit("product-added", newProduct);
+  });
+
+  socket.on("product-updated", (updatedProduct) => {
+    io.emit("product-updated", updatedProduct);
+  });
+
+  socket.on("product-deleted", (deletedId) => {
+    io.emit("product-deleted", deletedId);
+  });
 
   socket.on("disconnect", () => {
-    console.log("Cliente desconectado:", socket.id);
+    console.log("❌ Cliente desconectado:", socket.id);
   });
 });
 
-// Iniciamos el servidor
+// Render asigna el puerto automáticamente
+const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
-  console.log(`Servidor WebSocket escuchando en puerto ${PORT}`);
+  console.log(`🚀 Servidor WebSocket corriendo en puerto ${PORT}`);
 });

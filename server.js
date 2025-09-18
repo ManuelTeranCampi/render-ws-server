@@ -78,9 +78,7 @@ io.on("connection", (socket) => {
   socket.on("product-updated", (updatedProduct) =>
     io.emit("product-updated", updatedProduct)
   );
-  socket.on("product-deleted", (deletedId) =>
-    io.emit("product-deleted", deletedId)
-  );
+  socket.on("product-deleted", (id) => io.emit("product-deleted", id));
 
   socket.on("disconnect", () =>
     console.log("❌ Cliente desconectado:", socket.id)
